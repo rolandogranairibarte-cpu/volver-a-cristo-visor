@@ -139,11 +139,10 @@ button,input{font:inherit}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-<!-- CORRECCIÓN:
-Los destinos del índice lateral se basan en los enlaces internos reales
-del PDF (las anotaciones del índice de las páginas PDF 5-7), no en los
-números impresos del libro. Así se evita el desfase de las páginas preliminares.
--->
+// CORRECCIÓN:
+// Los destinos del índice lateral se basan en los enlaces internos reales
+// del PDF (las anotaciones del índice de las páginas PDF 5-7), no en los
+// números impresos del libro. Así se evita el desfase de las páginas preliminares.
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
