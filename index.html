@@ -112,7 +112,7 @@ button,input{font:inherit}
       <button class="btn" id="prevTop">Anterior</button>
       <span class="page-label">Página</span>
       <input class="page-input" id="pageInput" type="number" min="1" value="1" aria-label="Número de página">
-      <span class="page-label">/ 298</span>
+      <span class="page-label">/ <span id="pageTotalTop">298</span></span>
       <button class="btn" id="nextTop">Siguiente</button>
       <button class="btn primary" id="toggleToc">Abrir índice</button>
       <div class="zoom-wrap">
@@ -139,111 +139,18 @@ button,input{font:inherit}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
+<!-- CORRECCIÓN:
+Los destinos del índice lateral se basan en los enlaces internos reales
+del PDF (las anotaciones del índice de las páginas PDF 5-7), no en los
+números impresos del libro. Así se evita el desfase de las páginas preliminares.
+-->
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 const PDF_URL = "volver-a-cristo.pdf";
 const TOTAL = 298;
 
-const toc = [
-  ["Portada",1,"normal"],
-  ["Derechos de autor",2,"normal"],
-  ["Dedicatoria",3,"normal"],
-  ["Índice impreso",5,"normal"],
-  ["Prefacio",9,"normal"],
-  ["1. UN EVANGELIO COLONIZADO",9,"chapter"],
-  ["Cuando el púlpito vive del miedo",13,"sub"],
-  ["Fe, propaganda y control del discurso",17,"sub"],
-  ["La escatología como campo de batalla",19,"sub"],
-  ["Cómo llegamos a esto",21,"sub"],
-  ["2. EL REGRESO DE LOS JUDAIZANTES",27,"chapter"],
-  ["Una vieja herejía con ropaje nuevo",27,"sub"],
-  ["Gálatas hoy: la misma batalla, el mismo peligro",32,"sub"],
-  ["De la dicotomía al sincretismo",36,"sub"],
-  ["Raíces Hebreas: ¿Regreso a la verdad o extravío revestido de piedad?",40,"sub"],
-  ["Judaísmo mesiánico: una realidad distinta y legítima",42,"sub"],
-  ["Entre la confusión y la desviación",43,"sub"],
-  ["Sombras y realidad: el error de retroceder",47,"sub"],
-  ["3. SIONISMO EVANGÉLICO",51,"chapter"],
-  ["El sionismo cristiano: entre la teología y la ideología política",56,"sub"],
-  ["La pregunta que lo cambia todo",58,"sub"],
-  ["La ilusión del privilegio y el escándalo de la gracia",63,"sub"],
-  ["Abraham: Volver a la fe que empezó todo",67,"sub"],
-  ["Más allá del mapa: Promesa, tierra y el espejismo",71,"sub"],
-  ["La tierra prometida y el error de confundir promesa con propiedad",75,"sub"],
-  ["¿Israel tiene derecho sobre la tierra en base a promesas divinas?",80,"sub"],
-  ["4. SÍMBOLOS BAJO SOSPECHA",85,"chapter"],
-  ["La Iglesia fracturada: cuando Israel y Cristo compiten por el corazón del creyente",86,"sub"],
-  ["Mateo 24 bajo fuego: profecía incumplida y la ilusión del futuro",89,"sub"],
-  ["Toledot Yeshu y el Talmud: ecos de un judaísmo que desafía al Evangelio",92,"sub"],
-  ["¿Estrella de David o de Renfán?",95,"sub"],
-  ["Renfanismo, un término polémico pero necesario",100,"sub"],
-  ["5. CUANDO EL TIEMPO SE FRAGMENTA",103,"chapter"],
-  ["El tiempo herido: crisis, incertidumbre y el nacimiento de una nueva forma de leer la historia",104,"sub"],
-  ["El rapto y las visiones de Margaret McDonald",105,"sub"],
-  ["Darby y la arquitectura del tiempo",106,"sub"],
-  ["Expansión, recepción y tensiones",109,"sub"],
-  ["La Biblia de Scofield: la pedagogía invisible",111,"sub"],
-  ["La difusión de un sistema: del margen al centro",112,"sub"],
-  ["Entre claridad y poder",114,"sub"],
-  ["El origen cesacionista del dispensacionalismo",116,"sub"],
-  ["El problema pentecostal y la mutación del sistema",119,"sub"],
-  ["6. ¿QUIÉN ES ISRAEL?",123,"chapter"],
-  ["Un Dios de pactos",125,"sub"],
-  ["Los gentiles nunca fueron excluidos del pueblo de Dios",128,"sub"],
-  ["El cumplimiento en Cristo: la universalización de la promesa",131,"sub"],
-  ["La inclusión de los gentiles, siempre fue el plan A",132,"sub"],
-  ["Un solo plan de redención para un solo pueblo",135,"sub"],
-  ["El remanente, la gracia y el verdadero pueblo de Dios",138,"sub"],
-  ["7. LA IGLESIA, EL ISRAEL DE DIOS",143,"chapter"],
-  ["Promesas, cumplimiento y unidad",143,"sub"],
-  ["El misterio revelado: un solo pueblo en Cristo",146,"sub"],
-  ["Un solo pacto: una unidad incómoda",149,"sub"],
-  ["Nuestros padres y las doce tribus",153,"sub"],
-  ["Los dones son irrevocables… ¿Para quién?",154,"sub"],
-  ["8. LA OBSESIÓN APOCALÍPTICA",159,"chapter"],
-  ["¿95 d.C. o antes del año 70?",160,"sub"],
-  ["El testimonio de Ireneo",162,"sub"],
-  ["El Apocalipsis y su datación: un asunto clave",168,"sub"],
-  ["1948, ¿Profecía o proyecto político?",173,"sub"],
-  ["9. DETOX DE LA ESCATOLOCURA",181,"chapter"],
-  ["Una unidad revelada",182,"sub"],
-  ["Las influencias culturales sobre la interpretación",184,"sub"],
-  ["De las Sombras del Antiguo Pacto a la Realidad de Cristo",186,"sub"],
-  ["La importancia del contexto",190,"sub"],
-  ["Géneros literarios y escatología",193,"sub"],
-  ["La diferencia entre lenguaje profético y apocalíptico",194,"sub"],
-  ["La fuerza real del simbolismo profético",196,"sub"],
-  ["Pentecostés y la interpretación apostólica",199,"sub"],
-  ["Una unidad interna con Cristo en el centro",200,"sub"],
-  ["Cuando Cristo deja de ser el centro",202,"sub"],
-  ["La promesa reinterpretada: Abraham",205,"sub"],
-  ["El caso de Pablo: la hermenéutica escatológica paulina",207,"sub"],
-  ["10. DESMONTANDO EL ESPECTÁCULO",211,"chapter"],
-  ["La semana setenta y el arte de forzar la Biblia",212,"sub"],
-  ["El 666, Nerón y la obsesión moderna",216,"sub"],
-  ["La bestia y el eco de un nombre",219,"sub"],
-  ["La marca y el mercado",222,"sub"],
-  ["La marca invisible",225,"sub"],
-  ["¿Quién detiene al hombre de pecado?",227,"sub"],
-  ["¿Qué es La Gran Tribulación de Mateo 24?",231,"sub"],
-  ["La expectativa del Tercer Templo",234,"sub"],
-  ["11. EL MITO DEL RAPTO SECRETO",241,"chapter"],
-  ["El negocio del rapto secreto",246,"sub"],
-  ["Como ladrón en la noche",249,"sub"],
-  ["El mito de la tribulación futura y el negocio del miedo",251,"sub"],
-  ["¿Roma el origen del futurismo?",253,"sub"],
-  ["La gran ironía del dispensacionalismo",255,"sub"],
-  ["El rapto secreto: la fuerza de una historia bien contada",259,"sub"],
-  ["12. EL PACTO ES CRISTO",263,"chapter"],
-  ["El doble rasero moral y la memoria selectiva",266,"sub"],
-  ["Cuando la verdad incomoda al sistema",268,"sub"],
-  ["Un debate que enciende pasiones",270,"sub"],
-  ["Cristo es nuestra pascua",273,"sub"],
-  ["La Ley murió en la Cruz",275,"sub"],
-  ["BIBLIOGRAFÍA DE APOYO",281,"chapter"],
-  ["ACERCA DEL AUTOR",283,"chapter"]
-];
+const toc = [["Portada", 1, "normal"], ["Derechos de autor", 2, "normal"], ["Dedicatoria", 3, "normal"], ["Índice impreso", 5, "normal"], ["Prefacio", 9, "normal"], ["INTRODUCCIÓN", 17, "chapter"], ["1. UN EVANGELIO COLONIZADO", 23, "chapter"], ["Cuando el púlpito vive del miedo", 27, "sub"], ["Fe, propaganda y control del discurso", 31, "sub"], ["La escatología como campo de batalla", 33, "sub"], ["Cómo llegamos a esto: fe, Israel y una historia que pocos cuestionan", 35, "sub"], ["2. EL REGRESO DE LOS JUDAIZANTES", 41, "chapter"], ["Una vieja herejía con ropaje nuevo", 41, "sub"], ["Gálatas hoy: la misma batalla, el mismo peligro", 46, "sub"], ["De la dicotomía al sincretismo", 50, "sub"], ["Raíces Hebreas: ¿Regreso a la verdad o extravío revestido de piedad?", 54, "sub"], ["Judaísmo mesiánico: una realidad distinta y legítima", 56, "sub"], ["Entre la confusión y la desviación: un desafío urgente", 57, "sub"], ["Sombras y realidad: el error de retroceder", 61, "sub"], ["3. SIONISMO EVANGÉLICO", 65, "chapter"], ["El sionismo cristiano: entre la teología y la ideología política", 70, "sub"], ["La pregunta que lo cambia todo", 72, "sub"], ["La ilusión del privilegio y el escándalo de la gracia", 77, "sub"], ["Abraham: Volver a la fe que empezó todo", 81, "sub"], ["Más allá del mapa: Promesa, tierra y el espejismo", 85, "sub"], ["La tierra prometida y el error de confundir promesa con propiedad", 89, "sub"], ["¿Israel tiene derecho sobre la tierra en base a promesas ―divinas‖?", 94, "sub"], ["4. SÍMBOLOS BAJO SOSPECHA", 99, "chapter"], ["La Iglesia fracturada: cuando Israel y Cristo compiten por el corazón del creyente", 100, "sub"], ["Mateo 24 bajo fuego: profecía ¿Incumplida? y la ilusión del futuro", 103, "sub"], ["Toledot Yeshu y el Talmud: ecos de un judaísmo que desafía al Evangelio", 106, "sub"], ["¿Estrella de David o de Renfán? mito, símbolo y sombras de una simbología discutida", 109, "sub"], ["Renfanismo, un término polémico pero necesario", 114, "sub"], ["5. CUANDO EL TIEMPO SE FRAGMENTA", 117, "chapter"], ["El tiempo herido: crisis, incertidumbre y el nacimiento de una nueva forma de leer la historia", 118, "sub"], ["El rapto y las ―visiones‖ de Margaret McDonald", 119, "sub"], ["Darby y la arquitectura del tiempo: una teología que reorganiza la historia", 120, "sub"], ["Expansión, recepción y tensiones: entre claridad y fragmentación", 123, "sub"], ["La Biblia de Scofield: la pedagogía invisible", 125, "sub"], ["La difusión de un sistema: del margen al centro de la fe cotidiana", 126, "sub"], ["Entre claridad y poder: política, cultura y las tensiones del sistema", 128, "sub"], ["El origen cesacionista del dispensacionalismo ¿Cómo abrazaron esto los pentecostales?", 130, "sub"], ["El problema pentecostal y la mutación del sistema", 133, "sub"], ["6. ¿QUIÉN ES ISRAEL?", 137, "chapter"], ["Un Dios de pactos", 139, "sub"], ["Los gentiles nunca fueron excluidos del pueblo de Dios, ni siquiera en el Antiguo Testamento", 142, "sub"], ["El cumplimiento en Cristo: la universalización de la promesa", 145, "sub"], ["La inclusión de los gentiles, siempre fue el plan A desde el inicio", 146, "sub"], ["Un solo plan de redención para un solo pueblo", 149, "sub"], ["El remanente, la gracia y el verdadero pueblo de Dios: una Ekklesía.", 152, "sub"], ["7. LA IGLESIA, EL ISRAEL DE DIOS", 157, "chapter"], ["Promesas, cumplimiento y unidad", 157, "sub"], ["El misterio revelado: un solo pueblo en Cristo", 160, "sub"], ["Un solo pacto: una unidad incómoda", 163, "sub"], ["―Nuestros padres‖ y las doce tribus", 167, "sub"], ["―Los dones son irrevocables‖… ¿Para quién?", 168, "sub"], ["8. LA OBSESIÓN APOCALÍPTICA", 173, "chapter"], ["¿95 d.C. o antes del año 70? El gran debate sobre Apocalipsis", 174, "sub"], ["El testimonio de Ireneo: ¿evidencia sólida o interpretación forzada?", 176, "sub"], ["El Apocalipsis y su datación: un asunto clave", 182, "sub"], ["1948, ¿Profecía o proyecto político?", 187, "sub"], ["9. DETOX DE LA ESCATOLOCURA", 195, "chapter"], ["Una unidad revelada", 196, "sub"], ["Las influencias culturales sobre la interpretación", 198, "sub"], ["De las \"Sombras\" del Antiguo Pacto a la Realidad de Cristo", 200, "sub"], ["La importancia del contexto", 204, "sub"], ["Géneros literarios y escatología: claves para una interpretación fiel", 207, "sub"], ["La diferencia entre el lenguaje profético y el apocalíptico", 208, "sub"], ["La fuerza real del simbolismo profético", 210, "sub"], ["Pentecostés y la interpretación apostólica", 213, "sub"], ["Una unidad interna con Cristo en el centro", 214, "sub"], ["Cuando Cristo deja de ser el centro", 216, "sub"], ["La promesa reinterpretada: Abraham", 219, "sub"], ["El caso de Pablo: La hermenéutica escatológica paulina y su centro en Cristo", 221, "sub"], ["10. DESMONTANDO EL ESPECTÁCULO", 225, "chapter"], ["La semana setenta y el arte de forzar la Biblia", 226, "sub"], ["El 666, Nerón y la obsesión moderna por inventar monstruos", 230, "sub"], ["La bestia y el eco de un nombre", 233, "sub"], ["La marca y el mercado: el peso de un nombre en la vida cotidiana", 236, "sub"], ["La marca invisible: lealtad, identidad y pertenencia", 239, "sub"], ["¿Quién detiene al ―hombre de pecado‖ en 2 Tesalonicenses 2?", 241, "sub"], ["¿Qué es \"La Gran Tribulación\" de Mateo 24?", 245, "sub"], ["La expectativa del Tercer Templo: ¿Sacrificios restaurados, realidad o ficción?", 248, "sub"], ["11. EL MITO DEL RAPTO SECRETO", 255, "chapter"], ["El negocio del rapto secreto", 260, "sub"], ["―Como ladrón en la noche‖", 263, "sub"], ["El mito de la tribulación futura y el negocio del miedo", 265, "sub"], ["¿Roma el origen del futurismo?", 267, "sub"], ["La gran ironía del dispensacionalismo: el rapto que salió del Vaticano", 269, "sub"], ["El rapto secreto: La fuerza de una historia bien contada", 273, "sub"], ["12. EL PACTO ES CRISTO", 277, "chapter"], ["El doble rasero moral y la memoria selectiva", 280, "sub"], ["Cuando la verdad incomoda al sistema", 282, "sub"], ["Un debate que enciende pasiones", 284, "sub"], ["Cristo es nuestra pascua", 287, "sub"], ["La Ley murió en la Cruz: en Cristo comienza la verdadera libertad", 289, "sub"], ["BIBLIOGRAFÍA DE APOYO", 295, "chapter"], ["ACERCA DEL AUTOR", 297, "chapter"]];
 
 const tocEl = document.getElementById("toc");
 toc.forEach(([label,page,kind])=>{
@@ -327,6 +234,7 @@ window.addEventListener("resize",()=>{ if(pdfDoc) renderPage(current); });
 pdfjsLib.getDocument(PDF_URL).promise.then(doc=>{
   pdfDoc=doc;
   document.getElementById("pageTotal").textContent=doc.numPages;
+  document.getElementById("pageTotalTop").textContent=doc.numPages;
   goTo(1);
 }).catch(err=>{
   console.error(err);
