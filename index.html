@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volver a Cristo — Lector online</title>
+<style>
+:root{
+  --sidebar:#0d1218;
+  --sidebar-2:#151b22;
+  --gold:#e7b94f;
+  --gold-soft:#d7b56b;
+  --cream:#eee8d9;
+  --cream-2:#e5ddcc;
+  --red:#9b2035;
+  --red-dark:#741728;
+  --ink:#241f1a;
+  --line:#cfc4ae;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:Georgia,"Times New Roman",serif;background:var(--cream);color:var(--ink)}
+.app{height:100vh;display:flex;background:var(--cream)}
+.sidebar{
+  width:275px;flex:0 0 275px;background:var(--sidebar);color:#f1e8d6;
+  overflow-y:auto;padding:20px 14px 35px;border-right:1px solid #30363d;
+  scrollbar-width:thin;
+}
+.brand-small{font-size:12px;letter-spacing:1.5px;color:var(--gold);font-weight:bold;text-transform:uppercase}
+.brand{font-size:22px;font-weight:bold;margin:7px 0 17px;color:#fff}
+.rule{height:1px;background:#39404a;margin:0 0 18px}
+.toc-title{font-size:13px;letter-spacing:1px;color:var(--gold);font-weight:bold;margin-bottom:10px}
+.toc a{
+  display:block;color:#f0eadf;text-decoration:none;font-size:15px;line-height:1.25;
+  padding:6px 8px;border-radius:4px;margin:1px 0;
+}
+.toc a:hover{background:#292f37}
+.toc a.active{background:#3d372a;color:#fff}
+.toc a.chapter{color:var(--gold);font-weight:bold;text-transform:uppercase;margin-top:8px}
+.toc a.sub{padding-left:8px}
+.viewer{min-width:0;flex:1;display:flex;flex-direction:column}
+.toolbar{
+  height:70px;flex:0 0 70px;background:#f6efdf;border-bottom:1px solid #cdbf9f;
+  display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);z-index:5;
+}
+button,input{font:inherit}
+.btn{
+  border:1px solid #cbbd9e;background:#fbf7ec;color:#3d362e;border-radius:4px;
+  padding:8px 12px;cursor:pointer;white-space:nowrap
+}
+.btn:hover{background:#f0e7d5}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff;font-weight:bold}
+.btn.primary:hover{background:var(--red-dark)}
+.page-label{font-size:15px}
+.page-input{width:68px;text-align:center;padding:8px 5px;border:1px solid #cbbd9e;border-radius:4px;background:#fffaf0}
+.zoom-wrap{display:flex;align-items:center;gap:7px;margin-left:4px}
+.zoom{width:115px;accent-color:var(--red)}
+.reader{
+  flex:1;overflow:auto;background:
+  radial-gradient(circle at 50% 15%,rgba(255,255,255,.38),transparent 42%),
+  var(--cream);
+  padding:18px 20px 45px;
+}
+.notice{text-align:center;font-size:14px;margin:8px 0 16px;color:#594f43}
+.page-shell{
+  max-width:1030px;margin:0 auto;background:#d9d2c3;border:1px solid #c3baa7;
+  padding:32px 22px 20px;box-shadow:0 2px 10px rgba(0,0,0,.10);
+  position:relative;
+}
+.page-nav{
+  display:flex;align-items:center;justify-content:space-between;margin:-1px 0 8px;
+}
+.arrow{
+  width:70px;height:64px;border:0;border-radius:4px;background:var(--red);color:#fff;
+  font-size:35px;cursor:pointer;opacity:.95
+}
+.arrow:disabled{background:#c8a4a8;cursor:not-allowed}
+.page-counter{
+  background:#fffaf0;border:1px solid #cbbd9e;border-radius:4px;padding:10px 14px;
+  font-weight:bold;color:#51483d
+}
+#pageCanvas{
+  display:block;margin:0 auto;background:white;box-shadow:0 1px 5px rgba(0,0,0,.18);
+  max-width:100%;height:auto;
+}
+.loading{text-align:center;padding:40px;color:#62584b}
+.footer-note{text-align:center;font-size:12px;color:#7a6e5d;margin-top:12px}
+@media(max-width:800px){
+  .sidebar{position:fixed;left:-285px;top:0;bottom:0;z-index:20;transition:left .2s}
+  .sidebar.open{left:0}
+  .toolbar{height:auto;min-height:70px;flex-wrap:wrap;gap:6px}
+  .zoom-wrap{width:100%;justify-content:center;margin:0}
+  .reader{padding:10px 5px 30px}
+  .page-shell{padding:12px 8px}
+  .arrow{width:52px;height:48px;font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-small">LIBROS DE CONSULTA</div>
+    <div class="brand">Volver a Cristo</div>
+    <div class="rule"></div>
+    <div class="toc-title">ÍNDICE</div>
+    <nav class="toc" id="toc"></nav>
+  </aside>
+
+  <main class="viewer">
+    <header class="toolbar">
+      <button class="btn" id="prevTop">Anterior</button>
+      <span class="page-label">Página</span>
+      <input class="page-input" id="pageInput" type="number" min="1" value="1" aria-label="Número de página">
+      <span class="page-label">/ 298</span>
+      <button class="btn" id="nextTop">Siguiente</button>
+      <button class="btn primary" id="toggleToc">Abrir índice</button>
+      <div class="zoom-wrap">
+        <span>Zoom</span>
+        <input class="zoom" id="zoom" type="range" min="0.7" max="2.2" step="0.05" value="1">
+      </div>
+    </header>
+
+    <section class="reader" id="reader">
+      <div class="notice">Consulta en línea. El visor no muestra botón de descarga.</div>
+      <div class="page-shell">
+        <div class="page-nav">
+          <button class="arrow" id="prevArrow" aria-label="Página anterior">‹</button>
+          <div class="page-counter">Página <span id="pageNow">1</span> de <span id="pageTotal">298</span></div>
+          <button class="arrow" id="nextArrow" aria-label="Página siguiente">›</button>
+        </div>
+        <div id="loading" class="loading">Cargando el libro…</div>
+        <canvas id="pageCanvas"></canvas>
+        <div class="footer-note">Volver a Cristo · Maxi Alvarez</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const PDF_URL = "volver-a-cristo.pdf";
+const TOTAL = 298;
+
+const toc = [
+  ["Portada",1,"normal"],
+  ["Derechos de autor",2,"normal"],
+  ["Dedicatoria",3,"normal"],
+  ["Índice impreso",5,"normal"],
+  ["Prefacio",9,"normal"],
+  ["1. UN EVANGELIO COLONIZADO",9,"chapter"],
+  ["Cuando el púlpito vive del miedo",13,"sub"],
+  ["Fe, propaganda y control del discurso",17,"sub"],
+  ["La escatología como campo de batalla",19,"sub"],
+  ["Cómo llegamos a esto",21,"sub"],
+  ["2. EL REGRESO DE LOS JUDAIZANTES",27,"chapter"],
+  ["Una vieja herejía con ropaje nuevo",27,"sub"],
+  ["Gálatas hoy: la misma batalla, el mismo peligro",32,"sub"],
+  ["De la dicotomía al sincretismo",36,"sub"],
+  ["Raíces Hebreas: ¿Regreso a la verdad o extravío revestido de piedad?",40,"sub"],
+  ["Judaísmo mesiánico: una realidad distinta y legítima",42,"sub"],
+  ["Entre la confusión y la desviación",43,"sub"],
+  ["Sombras y realidad: el error de retroceder",47,"sub"],
+  ["3. SIONISMO EVANGÉLICO",51,"chapter"],
+  ["El sionismo cristiano: entre la teología y la ideología política",56,"sub"],
+  ["La pregunta que lo cambia todo",58,"sub"],
+  ["La ilusión del privilegio y el escándalo de la gracia",63,"sub"],
+  ["Abraham: Volver a la fe que empezó todo",67,"sub"],
+  ["Más allá del mapa: Promesa, tierra y el espejismo",71,"sub"],
+  ["La tierra prometida y el error de confundir promesa con propiedad",75,"sub"],
+  ["¿Israel tiene derecho sobre la tierra en base a promesas divinas?",80,"sub"],
+  ["4. SÍMBOLOS BAJO SOSPECHA",85,"chapter"],
+  ["La Iglesia fracturada: cuando Israel y Cristo compiten por el corazón del creyente",86,"sub"],
+  ["Mateo 24 bajo fuego: profecía incumplida y la ilusión del futuro",89,"sub"],
+  ["Toledot Yeshu y el Talmud: ecos de un judaísmo que desafía al Evangelio",92,"sub"],
+  ["¿Estrella de David o de Renfán?",95,"sub"],
+  ["Renfanismo, un término polémico pero necesario",100,"sub"],
+  ["5. CUANDO EL TIEMPO SE FRAGMENTA",103,"chapter"],
+  ["El tiempo herido: crisis, incertidumbre y el nacimiento de una nueva forma de leer la historia",104,"sub"],
+  ["El rapto y las visiones de Margaret McDonald",105,"sub"],
+  ["Darby y la arquitectura del tiempo",106,"sub"],
+  ["Expansión, recepción y tensiones",109,"sub"],
+  ["La Biblia de Scofield: la pedagogía invisible",111,"sub"],
+  ["La difusión de un sistema: del margen al centro",112,"sub"],
+  ["Entre claridad y poder",114,"sub"],
+  ["El origen cesacionista del dispensacionalismo",116,"sub"],
+  ["El problema pentecostal y la mutación del sistema",119,"sub"],
+  ["6. ¿QUIÉN ES ISRAEL?",123,"chapter"],
+  ["Un Dios de pactos",125,"sub"],
+  ["Los gentiles nunca fueron excluidos del pueblo de Dios",128,"sub"],
+  ["El cumplimiento en Cristo: la universalización de la promesa",131,"sub"],
+  ["La inclusión de los gentiles, siempre fue el plan A",132,"sub"],
+  ["Un solo plan de redención para un solo pueblo",135,"sub"],
+  ["El remanente, la gracia y el verdadero pueblo de Dios",138,"sub"],
+  ["7. LA IGLESIA, EL ISRAEL DE DIOS",143,"chapter"],
+  ["Promesas, cumplimiento y unidad",143,"sub"],
+  ["El misterio revelado: un solo pueblo en Cristo",146,"sub"],
+  ["Un solo pacto: una unidad incómoda",149,"sub"],
+  ["Nuestros padres y las doce tribus",153,"sub"],
+  ["Los dones son irrevocables… ¿Para quién?",154,"sub"],
+  ["8. LA OBSESIÓN APOCALÍPTICA",159,"chapter"],
+  ["¿95 d.C. o antes del año 70?",160,"sub"],
+  ["El testimonio de Ireneo",162,"sub"],
+  ["El Apocalipsis y su datación: un asunto clave",168,"sub"],
+  ["1948, ¿Profecía o proyecto político?",173,"sub"],
+  ["9. DETOX DE LA ESCATOLOCURA",181,"chapter"],
+  ["Una unidad revelada",182,"sub"],
+  ["Las influencias culturales sobre la interpretación",184,"sub"],
+  ["De las Sombras del Antiguo Pacto a la Realidad de Cristo",186,"sub"],
+  ["La importancia del contexto",190,"sub"],
+  ["Géneros literarios y escatología",193,"sub"],
+  ["La diferencia entre lenguaje profético y apocalíptico",194,"sub"],
+  ["La fuerza real del simbolismo profético",196,"sub"],
+  ["Pentecostés y la interpretación apostólica",199,"sub"],
+  ["Una unidad interna con Cristo en el centro",200,"sub"],
+  ["Cuando Cristo deja de ser el centro",202,"sub"],
+  ["La promesa reinterpretada: Abraham",205,"sub"],
+  ["El caso de Pablo: la hermenéutica escatológica paulina",207,"sub"],
+  ["10. DESMONTANDO EL ESPECTÁCULO",211,"chapter"],
+  ["La semana setenta y el arte de forzar la Biblia",212,"sub"],
+  ["El 666, Nerón y la obsesión moderna",216,"sub"],
+  ["La bestia y el eco de un nombre",219,"sub"],
+  ["La marca y el mercado",222,"sub"],
+  ["La marca invisible",225,"sub"],
+  ["¿Quién detiene al hombre de pecado?",227,"sub"],
+  ["¿Qué es La Gran Tribulación de Mateo 24?",231,"sub"],
+  ["La expectativa del Tercer Templo",234,"sub"],
+  ["11. EL MITO DEL RAPTO SECRETO",241,"chapter"],
+  ["El negocio del rapto secreto",246,"sub"],
+  ["Como ladrón en la noche",249,"sub"],
+  ["El mito de la tribulación futura y el negocio del miedo",251,"sub"],
+  ["¿Roma el origen del futurismo?",253,"sub"],
+  ["La gran ironía del dispensacionalismo",255,"sub"],
+  ["El rapto secreto: la fuerza de una historia bien contada",259,"sub"],
+  ["12. EL PACTO ES CRISTO",263,"chapter"],
+  ["El doble rasero moral y la memoria selectiva",266,"sub"],
+  ["Cuando la verdad incomoda al sistema",268,"sub"],
+  ["Un debate que enciende pasiones",270,"sub"],
+  ["Cristo es nuestra pascua",273,"sub"],
+  ["La Ley murió en la Cruz",275,"sub"],
+  ["BIBLIOGRAFÍA DE APOYO",281,"chapter"],
+  ["ACERCA DEL AUTOR",283,"chapter"]
+];
+
+const tocEl = document.getElementById("toc");
+toc.forEach(([label,page,kind])=>{
+  const a=document.createElement("a");
+  a.href="#";
+  a.textContent=label;
+  a.className=kind;
+  a.dataset.page=page;
+  a.addEventListener("click",e=>{e.preventDefault();goTo(page);});
+  tocEl.appendChild(a);
+});
+
+let pdfDoc=null, current=1, scale=1.0, rendering=false, pending=null;
+
+function fitScale(page){
+  const baseViewport=page.getViewport({scale:1});
+  const available=document.getElementById("reader").clientWidth-70;
+  return Math.min(available/baseViewport.width, 1.35) * scale;
+}
+
+async function renderPage(num){
+  if(!pdfDoc) return;
+  if(rendering){ pending=num; return; }
+  rendering=true;
+  document.getElementById("loading").style.display="block";
+  try{
+    const page=await pdfDoc.getPage(num);
+    const s=fitScale(page);
+    const viewport=page.getViewport({scale:s});
+    const canvas=document.getElementById("pageCanvas");
+    const ctx=canvas.getContext("2d");
+    canvas.width=Math.floor(viewport.width);
+    canvas.height=Math.floor(viewport.height);
+    canvas.style.width=viewport.width+"px";
+    canvas.style.height=viewport.height+"px";
+    document.getElementById("loading").style.display="none";
+    await page.render({canvasContext:ctx,viewport}).promise;
+    current=num;
+    document.getElementById("pageInput").value=current;
+    document.getElementById("pageNow").textContent=current;
+    document.getElementById("prevTop").disabled=current<=1;
+    document.getElementById("prevArrow").disabled=current<=1;
+    document.getElementById("nextTop").disabled=current>=TOTAL;
+    document.getElementById("nextArrow").disabled=current>=TOTAL;
+    document.querySelectorAll(".toc a").forEach(a=>a.classList.toggle("active",Number(a.dataset.page)===current));
+  }catch(err){
+    console.error(err);
+    document.getElementById("loading").textContent="No se pudo mostrar esta página.";
+  }finally{
+    rendering=false;
+    if(pending){const p=pending;pending=null;renderPage(p);}
+  }
+}
+
+function goTo(n){
+  n=Math.max(1,Math.min(TOTAL,parseInt(n)||1));
+  document.getElementById("reader").scrollTop=0;
+  renderPage(n);
+}
+
+document.getElementById("prevTop").onclick=()=>goTo(current-1);
+document.getElementById("nextTop").onclick=()=>goTo(current+1);
+document.getElementById("prevArrow").onclick=()=>goTo(current-1);
+document.getElementById("nextArrow").onclick=()=>goTo(current+1);
+document.getElementById("pageInput").addEventListener("change",e=>goTo(e.target.value));
+document.getElementById("zoom").addEventListener("input",e=>{scale=parseFloat(e.target.value);renderPage(current);});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowLeft") goTo(current-1);
+  if(e.key==="ArrowRight") goTo(current+1);
+});
+
+document.getElementById("toggleToc").onclick=()=>{
+  const s=document.getElementById("sidebar");
+  const isOpen=s.classList.toggle("open");
+  if(window.innerWidth<=800) document.getElementById("toggleToc").textContent=isOpen?"Cerrar índice":"Abrir índice";
+};
+
+window.addEventListener("resize",()=>{ if(pdfDoc) renderPage(current); });
+
+pdfjsLib.getDocument(PDF_URL).promise.then(doc=>{
+  pdfDoc=doc;
+  document.getElementById("pageTotal").textContent=doc.numPages;
+  goTo(1);
+}).catch(err=>{
+  console.error(err);
+  document.getElementById("loading").innerHTML =
+    "No se pudo cargar el PDF. Comprueba que <b>volver-a-cristo.pdf</b> esté en la misma carpeta que este visor.";
+});
+</script>
+</body>
+</html>
